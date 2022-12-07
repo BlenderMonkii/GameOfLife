@@ -14,7 +14,7 @@
 
 //void gotoXY(int x, int y);
 char** GetDateiStartZustand(char* fileName, char** zellen);
-char** GetRandomStartZustand(char** zellen, int prozent);
+char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* Text÷ffnen(char* fileName, char* modus);
 void PrintZelle(char** zellen);
 char** StartZustandErstellen(char fileName[], char** zellen);
@@ -26,21 +26,21 @@ int main() {
 	int eingabe;
 	int auswahl;
 	char* dateiName = (char*)malloc(100 * sizeof(char));
-	char** zellen;
+	char** zellen = 0;
 	char** pzellen;
 	int count = 0;
 	int lebendeNachbarn;
 	int zustand = 0;
 	char zelle;
 	int durchgang = 0;
-	zellen = malloc(N * sizeof(int*));
-	for (int i = 0; i < N; i++) {
-		zellen[i] = malloc(M * sizeof(int));
-		if (NULL == zellen[i]) {
-			printf("Kein Speicher mehr fuer Zeile %d\n", i);
-			return EXIT_FAILURE;
-		}
-	}
+	//zellen = malloc(zeilen * sizeof(int*));
+	//for (int i = 0; i < zeilen; i++) {
+	//	zellen[i] = malloc(reihen * sizeof(int));
+	//	if (NULL == zellen[i]) {
+	//		printf("Kein Speicher mehr fuer Zeile %d\n", i);
+	//		return EXIT_FAILURE;
+	//	}
+	//}
 	printf("\tGame of Life\n\n");
 	printf("Datei Laden: 1\n");
 	printf("Zufallsgenerator: 0\n");
@@ -71,42 +71,43 @@ int main() {
 		printf("Wie viele lebende Zellen soll es geben (Prozent): ");
 		scanf("%d", &prozent);
 
-		zellen = GetRandomStartZustand(zellen, prozent);
+		zellen = GetRandomStartZustand(prozent,zeilen,reihen);
 		break;
-	case 1:
-		dateiName = "Startzustand_1.txt";
-		zellen = GetDateiStartZustand(dateiName, zellen);
-		break;
-	case 2:
-		dateiName = "Startzustand_2.txt";
-		zellen = GetDateiStartZustand(dateiName, zellen);
-			break;
-	case 3:
-		dateiName = "Startzustand_3.txt";
-		zellen = GetDateiStartZustand(dateiName, zellen);
-		break;
-	case 4:
-		printf("DateiName: ");
-		fgets(dateiName, sizeof(dateiName), stdin);
-		fgets(p, 1024, stdin);
-		zellen = StartZustandErstellen(dateiName, zellen);
-		break;
+	//case 1:
+	//	dateiName = "Startzustand_1.txt";
+	//	zellen = GetDateiStartZustand(dateiName, zellen);
+	//	break;
+	//case 2:
+	//	dateiName = "Startzustand_2.txt";
+	//	zellen = GetDateiStartZustand(dateiName, zellen);
+	//		break;
+	//case 3:
+	//	dateiName = "Startzustand_3.txt";
+	//	zellen = GetDateiStartZustand(dateiName, zellen);
+	//	break;
+	//case 4:
+	//	printf("DateiName: ");
+	//	fgets(dateiName, sizeof(dateiName), stdin);
+	//	fgets(p, 1024, stdin);
+	//	zellen = StartZustandErstellen(dateiName, zellen);
+	//	break;
 	default:
 		printf("Falsche Eingabe!");
 		break;
 	}
 
 	printf("Startzustand:\n");
-	PrintZelle(zellen);
+	PrintZelle(zellen, zeilen, reihen);
+
 
 	printf("SchrittweiseAbarbeitung: 0\n");
 	printf("fliessende Animation: 1\n");
 	scanf("%d", &eingabe);
 
 	//Speicherplatz f¸r Zellen generieren
-	pzellen = malloc(N * sizeof(int*));
-	for (int i = 0; i < M; i++) {
-		pzellen[i] = malloc(M * sizeof(int));
+	pzellen = malloc(zeilen * sizeof(int*));
+	for (int i = 0; i < zeilen; i++) {
+		pzellen[i] = malloc(reihen * sizeof(int));
 		if (NULL == pzellen[i]) {
 			printf("Kein Speicher mehr fuer Zeile %d\n", i);
 			return EXIT_FAILURE;
@@ -118,9 +119,9 @@ int main() {
 		Sleep(100);
 		system("cls");
 
-		for (int i = 0; i < N; i++)
+		for (int i = 0; i < zeilen; i++)
 		{
-			for (int k = 0; k < M; k++)
+			for (int k = 0; k < reihen; k++)
 			{
 				lebendeNachbarn = 0;
 				count = 0;
@@ -132,7 +133,7 @@ int main() {
 				//		existiert sie in der n‰chsten Generation weiter.
 				if (zelle == '*') {
 					//obenrechts, gibt es nicht in der ersten Reihe und letzten Spalte
-					if (i > 0 && k < (M)-1) {
+					if (i > 0 && k < (reihen)-1) {
 							if (zelle == zellen[i-1][k + 1]) { lebendeNachbarn++; }
 					}
 						//obenlinks, gibt es nicht in der ersten Reihe und erster Spalte
@@ -140,17 +141,17 @@ int main() {
 						if (zelle == zellen[i - 1][k - 1]) { lebendeNachbarn++; }
 					}
 						//untenlinks, gibt es nicht in der letzten Reihe und erster Spalte
-					if (i < (N)-1 && k > 0) {
+					if (i < (zeilen)-1 && k > 0) {
 						if (zelle == zellen[i + 1][k - 1]) { lebendeNachbarn++; }
 					}
 						//untenrechts, gibt es nicht in der letzten Reihe und letztenSpalze Spalte
-					if (i < (N)-1 && k < (M)-1) {
+					if (i < (zeilen)-1 && k < (reihen)-1) {
 						if (zelle == zellen[i + 1][k + 1]) { lebendeNachbarn++; }
 					}
-					if (k < (M) - 1) {
+					if (k < (reihen) - 1) {
 						if (zelle == zellen[i][k + 1]) { lebendeNachbarn++; }
 					}
-					if (i < (N) -1) {
+					if (i < (zeilen) -1) {
 						if (zelle == zellen[i + 1][k]) { lebendeNachbarn++; }
 					}
 					if (k > 0) {
@@ -164,7 +165,7 @@ int main() {
 				//		entsteht aus ihr eine neue lebende Zelle.
 				if (zelle == ' ') {
 					//obenrechts, gibt es nicht in der ersten Reihe und letzten Spalte
-					if (i > 0 && k < (M)-1) {
+					if (i > 0 && k < (reihen)-1) {
 						if (zelle != zellen[i - 1][k + 1]) { lebendeNachbarn++; }
 					}
 					//obenlinks, gibt es nicht in der ersten Reihe und erster Spalte
@@ -172,17 +173,17 @@ int main() {
 						if (zelle != zellen[i - 1][k - 1]) { count++; }
 					}
 					//untenlinks, gibt es nicht in der letzten Reihe und erster Spalte
-					if (i < (N)-1 && k > 0) {
+					if (i < (zeilen)-1 && k > 0) {
 						if (zelle != zellen[i + 1][k - 1]) { count++; }
 					}
 					//untenrechts, gibt es nicht in der letzten Reihe und letztenSpalze Spalte
-					if (i < (N)-1 && k < (M)-1) {
+					if (i < (zeilen)-1 && k < (reihen)-1) {
 						if (zelle != zellen[i + 1][k + 1]) { count++; }
 					}
-					if (k < (M)-1) {
+					if (k < (reihen)-1) {
 						if (zelle != zellen[i][k + 1]) { count++; }
 					}
-					if (i < (N)-1) {
+					if (i < (zeilen)-1) {
 						if (zelle != zellen[i + 1][k]) { count++; }
 					}
 					if (k > 0) {
@@ -208,9 +209,9 @@ int main() {
 			printf("\n");
 		}
 		//Ausgabe & tauschen
-		for (int i = 0; i < N; i++)
+		for (int i = 0; i < zeilen; i++)
 		{
-			for (int k = 0; k < M; k++)
+			for (int k = 0; k < reihen; k++)
 			{
 				printf(" %c ", pzellen[i][k]);
 				zellen[i][k] = pzellen[i][k];
@@ -226,16 +227,25 @@ int main() {
 	}
 	return 0;
 }
-char** GetRandomStartZustand(char** zellen, int prozent) {
-	int maxAnzahlAnLebendenZelle = ((N)*(M)) * ((float)(prozent) / 100);
-	int maxToteZellen = ((N) * (M)) - maxAnzahlAnLebendenZelle;
+char** GetRandomStartZustand(int prozent,int zeilen, int reihen) {
+	char** zellen;
+	zellen = malloc(zeilen * sizeof(int*));
+	for (int i = 0; i < zeilen; i++) {
+		zellen[i] = malloc(reihen * sizeof(int));
+		if (NULL == zellen[i]) {
+			printf("Kein Speicher mehr fuer Zeile %d\n", i);
+			return EXIT_FAILURE;
+		}
+	}
+	int maxAnzahlAnLebendenZelle = ((zeilen)*(reihen)) * ((float)(prozent) / 100);
+	int maxToteZellen = ((zeilen) * (reihen)) - maxAnzahlAnLebendenZelle;
 	char zustand = ' ';
 	int currentLebendeZellen = 0;
 	int currentToteZellen = 0;
 
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < zeilen; i++)
 	{
-		for (int k = 0; k < M; k++)
+		for (int k = 0; k < reihen; k++)
 		{
 			if (maxToteZellen == currentToteZellen) {
 				zustand = '*';
@@ -251,24 +261,22 @@ char** GetRandomStartZustand(char** zellen, int prozent) {
 					currentToteZellen++;
 					zustand = ' ';
 					zellen[i][k] = zustand;
-
 				}
 			}
 			else {
 				zustand = ' ';
 				zellen[i][k] = zustand;
-
 			}
 			//char zustand = ((rand() % 2) == 0 ? ' ' : '*');
 		}
 	}
 	return zellen;
 }
-void PrintZelle(char** zellen) {
+void PrintZelle(char** zellen, int zeilen, int reihen) {
 
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < zeilen; i++)
 	{
-		for (int k = 0; k < M; k++)
+		for (int k = 0; k < reihen; k++)
 		{
 			printf(" %c ", zellen[i][k]);
 		}
