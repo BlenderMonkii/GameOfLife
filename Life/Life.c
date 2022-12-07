@@ -8,7 +8,6 @@
 #define M 20
 #define DURCHGÄNGE 10
 
-//TODO - n und m aus datei auslesen!
 //TODO - Füllprozent der ZellenMatrix besser bestimmen
 
 
@@ -18,6 +17,8 @@ char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* TextÖffnen(char* fileName, char* modus);
 void PrintZelle(char** zellen);
 char** StartZustandErstellen(char fileName[], char** zellen);
+int GetZeilen(char* dateiName);
+int GetReihen(char* dateiName);
 
 int main() {
 	srand(time(NULL));
@@ -73,18 +74,24 @@ int main() {
 
 		zellen = GetRandomStartZustand(prozent,zeilen,reihen);
 		break;
-	//case 1:
-	//	dateiName = "Startzustand_1.txt";
-	//	zellen = GetDateiStartZustand(dateiName, zellen);
-	//	break;
-	//case 2:
-	//	dateiName = "Startzustand_2.txt";
-	//	zellen = GetDateiStartZustand(dateiName, zellen);
-	//		break;
-	//case 3:
-	//	dateiName = "Startzustand_3.txt";
-	//	zellen = GetDateiStartZustand(dateiName, zellen);
-	//	break;
+	case 1:
+		dateiName = "Startzustand_1.txt";
+		zeilen = GetZeilen(dateiName);
+		reihen = GetReihen(dateiName);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		break;
+	case 2:
+		dateiName = "Startzustand_2.txt";
+		zeilen = GetZeilen(dateiName);
+		reihen = GetReihen(dateiName);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		break;
+	case 3:
+		dateiName = "Startzustand_3.txt";
+		zeilen = GetZeilen(dateiName);
+		reihen = GetReihen(dateiName);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		break;
 	//case 4:
 	//	printf("DateiName: ");
 	//	fgets(dateiName, sizeof(dateiName), stdin);
@@ -95,9 +102,7 @@ int main() {
 		printf("Falsche Eingabe!");
 		break;
 	}
-
-	printf("Startzustand:\n");
-	PrintZelle(zellen, zeilen, reihen);
+	//PrintZelle(zellen, zeilen, reihen);
 
 
 	printf("SchrittweiseAbarbeitung: 0\n");
@@ -202,8 +207,8 @@ int main() {
 					zustand = 0;
 				}
 				else {
-					pzellen[i][k] = '*';
-					zustand = 1;
+				pzellen[i][k] = '*';
+				zustand = 1;
 				}
 			}
 			printf("\n");
@@ -227,7 +232,7 @@ int main() {
 	}
 	return 0;
 }
-char** GetRandomStartZustand(int prozent,int zeilen, int reihen) {
+char** GetRandomStartZustand(int prozent, int zeilen, int reihen) {
 	char** zellen;
 	zellen = malloc(zeilen * sizeof(int*));
 	for (int i = 0; i < zeilen; i++) {
@@ -237,7 +242,7 @@ char** GetRandomStartZustand(int prozent,int zeilen, int reihen) {
 			return EXIT_FAILURE;
 		}
 	}
-	int maxAnzahlAnLebendenZelle = ((zeilen)*(reihen)) * ((float)(prozent) / 100);
+	int maxAnzahlAnLebendenZelle = ((zeilen) * (reihen)) * ((float)(prozent) / 100);
 	int maxToteZellen = ((zeilen) * (reihen)) - maxAnzahlAnLebendenZelle;
 	char zustand = ' ';
 	int currentLebendeZellen = 0;
@@ -270,6 +275,8 @@ char** GetRandomStartZustand(int prozent,int zeilen, int reihen) {
 			//char zustand = ((rand() % 2) == 0 ? ' ' : '*');
 		}
 	}
+	printf("Startzustand:\n");
+	PrintZelle(zellen, zeilen, reihen);
 	return zellen;
 }
 void PrintZelle(char** zellen, int zeilen, int reihen) {
@@ -283,24 +290,36 @@ void PrintZelle(char** zellen, int zeilen, int reihen) {
 		printf("\n");
 	}
 }
-char** GetDateiStartZustand(char* fileName, char** zellen) {
-	int i = 0;
-	int k = 0;
+char** GetDateiStartZustand(char* fileName, int zeilen, int reihen) {
+	char** zellen;
+	zellen = malloc(zeilen * sizeof(int*));
+	for (int i = 0; i < zeilen; i++) {
+		zellen[i] = malloc(reihen * sizeof(int));
+		if (NULL == zellen[i]) {
+			printf("Kein Speicher mehr fuer Zeile %d\n", i);
+			return EXIT_FAILURE;
+		}
+	}
 	FILE* file = TextÖffnen(fileName, "rt");
+
 	int zeichen;
-		while ((zeichen = fgetc(file)) != EOF) {
-			if (i != N) {
-				if (zeichen != 10) {
+	for (int i = 0; i < zeilen; i++)
+	{
+		for (int k = 0; k < reihen; k++)
+		{
+			if ((zeichen = fgetc(file)) != EOF){
+				if (zeichen == 10) {
+					k--;
 					zellen[i][k] = zeichen;
-					//printf("%d", fputc(zeichen, stdout));
-					k++;
-					if (k == M) {
-						k = 0;
-						i++;
-					}
+				}
+				else {
+					zellen[i][k] = zeichen;
 				}
 			}
 		}
+	}
+	printf("Startzustand:\n");
+	PrintZelle(zellen, zeilen, reihen);
 	fclose(file);
 	return zellen;
 }
@@ -311,7 +330,6 @@ FILE* TextÖffnen(char* fileName, char* modus) {
 		return EXIT_FAILURE;
 	}
 	else {
-		printf("\n%s geöffnet\n", fileName);
 		return file;
 	}
 }
@@ -330,4 +348,39 @@ char** StartZustandErstellen(char fileName[], char** zellen) {
 	}
 	fclose(file);
 	return zellen;
+}
+
+int GetZeilen(char* dateiName) {
+	int zeile = 0;
+	int spalte = 0;
+	FILE* file = TextÖffnen(dateiName, "rt");
+	int zeichen;
+	while ((zeichen = fgetc(file)) != EOF) {
+		if (zeichen != 10) {
+			spalte++;
+		}
+		else {
+			spalte = 0;
+			zeile++;
+		}
+	}
+	zeile++;
+	return zeile;
+}
+int GetReihen(char* dateiName) {
+	int zeile = 0;
+	int spalte = 0;
+	FILE* file = TextÖffnen(dateiName, "rt");
+	int zeichen;
+	while ((zeichen = fgetc(file)) != EOF) {
+		if (zeichen != 10) {
+			spalte++;
+		}
+		else {
+			spalte = 0;
+			zeile++;
+		}
+	}
+	zeile++;
+	return spalte;
 }
