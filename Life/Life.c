@@ -4,19 +4,17 @@
 #include <windows.h>
 #pragma warning (disable: 4996)
 
-#define N 15
-#define M 20
 #define DURCHGÄNGE 10
 
 //TODO - Füllprozent der ZellenMatrix besser bestimmen
+//TODO - neue Datei anlegen und Matrix selbst erstellen
+//TODO - auf DAO prüfen
 
-
-//void gotoXY(int x, int y);
-char** GetDateiStartZustand(char* fileName, char** zellen);
+char** GetDateiStartZustand(char* fileName, int zeilen, int reihen);
 char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* TextÖffnen(char* fileName, char* modus);
-void PrintZelle(char** zellen);
-char** StartZustandErstellen(char fileName[], char** zellen);
+void PrintZelle(char** zellen, int zeilen, int reihen);
+char** StartZustandErstellen(char fileName[], int zeilen, int reihen);
 int GetZeilen(char* dateiName);
 int GetReihen(char* dateiName);
 
@@ -71,33 +69,39 @@ int main() {
 		scanf("%d", &reihen);
 		printf("Wie viele lebende Zellen soll es geben (Prozent): ");
 		scanf("%d", &prozent);
-
 		zellen = GetRandomStartZustand(prozent,zeilen,reihen);
 		break;
 	case 1:
 		dateiName = "Startzustand_1.txt";
 		zeilen = GetZeilen(dateiName);
 		reihen = GetReihen(dateiName);
-		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "rt");
 		break;
 	case 2:
 		dateiName = "Startzustand_2.txt";
 		zeilen = GetZeilen(dateiName);
 		reihen = GetReihen(dateiName);
-		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "rt");
 		break;
 	case 3:
 		dateiName = "Startzustand_3.txt";
 		zeilen = GetZeilen(dateiName);
 		reihen = GetReihen(dateiName);
-		zellen = GetDateiStartZustand(dateiName, zeilen, reihen);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "wt");
 		break;
-	//case 4:
-	//	printf("DateiName: ");
-	//	fgets(dateiName, sizeof(dateiName), stdin);
-	//	fgets(p, 1024, stdin);
-	//	zellen = StartZustandErstellen(dateiName, zellen);
-	//	break;
+	case 4:
+		printf("dateiname: ");
+		fgets(dateiName, sizeof(dateiName), stdin);
+		fgets(p, 1024, stdin);
+		printf("Wie viele Zeilen soll die Zelle besitzen: ");
+		scanf("%d", &zeilen);
+		fgets(p, 1024, stdin);
+		printf("Wie viele Reihen soll die Zelle besitzen: ");
+		scanf("%d", &reihen);
+		//fgets(dateiname, sizeof(dateiname), stdin);
+		fgets(p, 1024, stdin);
+		zellen = StartZustandErstellen(dateiName, zeilen, reihen, "w+t");
+		break;
 	default:
 		printf("Falsche Eingabe!");
 		break;
@@ -290,7 +294,7 @@ void PrintZelle(char** zellen, int zeilen, int reihen) {
 		printf("\n");
 	}
 }
-char** GetDateiStartZustand(char* fileName, int zeilen, int reihen) {
+char** GetDateiStartZustand(char* fileName, int zeilen, int reihen, char* modus) {
 	char** zellen;
 	zellen = malloc(zeilen * sizeof(int*));
 	for (int i = 0; i < zeilen; i++) {
@@ -300,7 +304,7 @@ char** GetDateiStartZustand(char* fileName, int zeilen, int reihen) {
 			return EXIT_FAILURE;
 		}
 	}
-	FILE* file = TextÖffnen(fileName, "rt");
+	FILE* file = TextÖffnen(fileName, modus);
 
 	int zeichen;
 	for (int i = 0; i < zeilen; i++)
@@ -333,23 +337,32 @@ FILE* TextÖffnen(char* fileName, char* modus) {
 		return file;
 	}
 }
-char** StartZustandErstellen(char fileName[], char** zellen) {
-	printf("%s", fileName);
-	FILE* file = TextÖffnen(fileName, "wt");
+char** StartZustandErstellen(char fileName[], int zeilen, int reihen, char* modus) {
+	char** zellen;
+	zellen = malloc(zeilen * sizeof(int*));
+	for (int i = 0; i < zeilen; i++) {
+		zellen[i] = malloc(reihen * sizeof(int));
+		if (NULL == zellen[i]) {
+			printf("Kein Speicher mehr fuer Zeile %d\n", i);
+			return EXIT_FAILURE;
+		}
+	}
+	FILE* file = TextÖffnen(fileName, modus);
 	char zustand;
-	for (int i = 0; i < N; i++)
+	for (int i = 0; i < zeilen; i++)
 	{
-		for (int k = 0; k < M; k++)
-		{
+		for (int k = 0; k < reihen; k++) {
 			scanf("%c", &zustand);
 			fputs(&zustand, file);
 		}
-		//fputs('\n', file);
+		//fputs(&zustand, file);
+		fgets("\n", zeilen, stdin);
+
 	}
 	fclose(file);
+	zellen = GetDateiStartZustand(fileName, zeilen, reihen, modus);
 	return zellen;
 }
-
 int GetZeilen(char* dateiName) {
 	int zeile = 0;
 	int spalte = 0;
