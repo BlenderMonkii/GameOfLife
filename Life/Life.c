@@ -276,7 +276,6 @@ char** GetRandomStartZustand(int prozent, int zeilen, int reihen) {
 				zustand = ' ';
 				zellen[i][k] = zustand;
 			}
-			//char zustand = ((rand() % 2) == 0 ? ' ' : '*');
 		}
 	}
 	printf("Startzustand:\n");
@@ -355,9 +354,6 @@ char** StartZustandErstellen(char fileName[], int zeilen, int reihen, char* modu
 			scanf("%c", &zustand);
 			fputs(&zustand, file);
 		}
-		//fputs(&zustand, file);
-		fgets("\n", zeilen, stdin);
-
 	}
 	fclose(file);
 	zellen = GetDateiStartZustand(fileName, zeilen, reihen, modus);
