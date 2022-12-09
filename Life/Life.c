@@ -2,6 +2,8 @@
 #include <math.h>
 #include <stdio.h>
 #include <windows.h>
+#include <stdbool.h>
+
 #pragma warning (disable: 4996)
 
 #define DURCHGÄNGE 10
@@ -14,7 +16,7 @@ char** GetDateiStartZustand(char* fileName, int zeilen, int reihen);
 char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* TextÖffnen(char* fileName, char* modus);
 void PrintZelle(char** zellen, int zeilen, int reihen);
-char** StartZustandErstellen(char fileName[], int zeilen, int reihen);
+void StartZustandErstellen(char fileName[], char* modus);
 int GetZeilen(char* dateiName);
 int GetReihen(char* dateiName);
 
@@ -32,14 +34,7 @@ int main() {
 	int zustand = 0;
 	char zelle;
 	int durchgang = 0;
-	//zellen = malloc(zeilen * sizeof(int*));
-	//for (int i = 0; i < zeilen; i++) {
-	//	zellen[i] = malloc(reihen * sizeof(int));
-	//	if (NULL == zellen[i]) {
-	//		printf("Kein Speicher mehr fuer Zeile %d\n", i);
-	//		return EXIT_FAILURE;
-	//	}
-	//}
+
 	printf("\tGame of Life\n\n");
 	printf("Datei Laden: 1\n");
 	printf("Zufallsgenerator: 0\n");
@@ -53,9 +48,7 @@ int main() {
 		printf("Startzustand_2: 2\n");
 		printf("Startzustand_3: 3\n");
 		printf("Startzustand erstellen: 4\n");
-
 		scanf("%d", &auswahl);
-		//scanf("%s", &dateiName);
 		fgets(p, 1024, stdin);
 	}
 	
@@ -87,27 +80,21 @@ int main() {
 		dateiName = "Startzustand_3.txt";
 		zeilen = GetZeilen(dateiName);
 		reihen = GetReihen(dateiName);
-		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "wt");
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "rt");
 		break;
 	case 4:
 		printf("dateiname: ");
-		fgets(dateiName, sizeof(dateiName), stdin);
+		scanf("%s", dateiName);
 		fgets(p, 1024, stdin);
-		printf("Wie viele Zeilen soll die Zelle besitzen: ");
-		scanf("%d", &zeilen);
-		fgets(p, 1024, stdin);
-		printf("Wie viele Reihen soll die Zelle besitzen: ");
-		scanf("%d", &reihen);
-		//fgets(dateiname, sizeof(dateiname), stdin);
-		fgets(p, 1024, stdin);
-		zellen = StartZustandErstellen(dateiName, zeilen, reihen, "w+t");
+		StartZustandErstellen(dateiName, "w+t");
+		zeilen = GetZeilen(dateiName);
+		reihen = GetReihen(dateiName);
+		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "rt");
 		break;
 	default:
 		printf("Falsche Eingabe!");
 		break;
 	}
-	//PrintZelle(zellen, zeilen, reihen);
-
 
 	printf("SchrittweiseAbarbeitung: 0\n");
 	printf("fliessende Animation: 1\n");
@@ -336,28 +323,24 @@ FILE* TextÖffnen(char* fileName, char* modus) {
 		return file;
 	}
 }
-char** StartZustandErstellen(char fileName[], int zeilen, int reihen, char* modus) {
-	char** zellen;
-	zellen = malloc(zeilen * sizeof(int*));
-	for (int i = 0; i < zeilen; i++) {
-		zellen[i] = malloc(reihen * sizeof(int));
-		if (NULL == zellen[i]) {
-			printf("Kein Speicher mehr fuer Zeile %d\n", i);
-			return EXIT_FAILURE;
-		}
-	}
+void StartZustandErstellen(char fileName[], char* modus) {
+	char** zellen = { 0 };
+	char p[1024];
 	FILE* file = TextÖffnen(fileName, modus);
-	char zustand;
-	for (int i = 0; i < zeilen; i++)
-	{
-		for (int k = 0; k < reihen; k++) {
-			scanf("%c", &zustand);
-			fputs(&zustand, file);
-		}
+	char* zustand = (char*)malloc(100 * sizeof(char));
+	printf("Zellen erstellen (q = beenden) : \n");
+
+	while (true) {
+		scanf("%[q, ,*]s", zustand);	
+		fputs(zustand, file);
+		fputs("\n", file);
+		fgets(p, 1024, stdin);
+		if (*zustand == 113) {
+			break;
+		}		
 	}
 	fclose(file);
-	zellen = GetDateiStartZustand(fileName, zeilen, reihen, modus);
-	return zellen;
+
 }
 int GetZeilen(char* dateiName) {
 	int zeile = 0;
@@ -365,19 +348,19 @@ int GetZeilen(char* dateiName) {
 	FILE* file = TextÖffnen(dateiName, "rt");
 	int zeichen;
 	while ((zeichen = fgetc(file)) != EOF) {
-		if (zeichen != 10) {
-			spalte++;
-		}
-		else {
-			spalte = 0;
+		if (zeichen == 10) {
 			zeile++;
+		}
+		if (zeichen == 113) {
+			zeile--;
+			break;
 		}
 	}
 	zeile++;
+	fclose(file);
 	return zeile;
 }
 int GetReihen(char* dateiName) {
-	int zeile = 0;
 	int spalte = 0;
 	FILE* file = TextÖffnen(dateiName, "rt");
 	int zeichen;
@@ -386,10 +369,9 @@ int GetReihen(char* dateiName) {
 			spalte++;
 		}
 		else {
-			spalte = 0;
-			zeile++;
+			break;
 		}
 	}
-	zeile++;
+	fclose(file);
 	return spalte;
 }
