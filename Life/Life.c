@@ -12,13 +12,14 @@
 //TODO - neue Datei anlegen und Matrix selbst erstellen
 //TODO - auf DAO prüfen
 
-char** GetDateiStartZustand(char* fileName, int zeilen, int reihen);
+char** GetDateiStartZustand(char* fileName, int zeilen, int reihen, char* modus);
 char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* TextÖffnen(char* fileName, char* modus);
 void PrintZelle(char** zellen, int zeilen, int reihen);
 void StartZustandErstellen(char fileName[], char* modus);
 int GetZeilen(char* dateiName);
 int GetReihen(char* dateiName);
+int DauZahlEingabe(int min, int max);
 
 int main() {
 	srand(time(NULL));
@@ -38,8 +39,12 @@ int main() {
 	printf("\tGame of Life\n\n");
 	printf("Datei Laden: 1\n");
 	printf("Zufallsgenerator: 0\n");
-	scanf("%d", &auswahl);
-	fgets(p, 1024, stdin);
+	auswahl = DauZahlEingabe(0, 1);
+	//if (scanf("%d", &auswahl) != 1) {
+	//	printf(">>Falsche Eingabe! Datentyp beachten!\n");
+	//	fgets(p, 1024, stdin);
+	//}
+	//fgets(p, 1024, stdin);
 
 	//Datei Laden:
 	if (auswahl == 1) {
@@ -48,20 +53,21 @@ int main() {
 		printf("Startzustand_2: 2\n");
 		printf("Startzustand_3: 3\n");
 		printf("Startzustand erstellen: 4\n");
-		scanf("%d", &auswahl);
-		fgets(p, 1024, stdin);
+		//scanf("%d", &auswahl);
+		auswahl = DauZahlEingabe(1, 4);
+		//fgets(p, 1024, stdin);
 	}
 	
 	switch (auswahl)
 	{
 	case 0:
 		//Zufallsgenerator:
-		printf("Wie viele Zeilen soll die Zelle besitzen: ");
-		scanf("%d", &zeilen);
-		printf("Wie viele Reihen soll die Zelle besitzen: ");
-		scanf("%d", &reihen);
+		printf("Wie viele Zeilen soll die Zelle besitzen[1-50]: ");
+		zeilen = DauZahlEingabe(1, 50);
+		printf("Wie viele Reihen soll die Zelle besitzen[1-50]: ");
+		reihen = DauZahlEingabe(1, 50);
 		printf("Wie viele lebende Zellen soll es geben (Prozent): ");
-		scanf("%d", &prozent);
+		prozent = DauZahlEingabe(0, 100);
 		zellen = GetRandomStartZustand(prozent,zeilen,reihen);
 		break;
 	case 1:
@@ -98,7 +104,7 @@ int main() {
 
 	printf("SchrittweiseAbarbeitung: 0\n");
 	printf("fliessende Animation: 1\n");
-	scanf("%d", &eingabe);
+	eingabe = DauZahlEingabe(0, 1);
 
 	//Speicherplatz für Zellen generieren
 	pzellen = malloc(zeilen * sizeof(int*));
@@ -374,4 +380,18 @@ int GetReihen(char* dateiName) {
 	}
 	fclose(file);
 	return spalte;
+}
+int DauZahlEingabe(int min, int max) {
+	int zahl;
+	char p[1024];
+	if (scanf("%d", &zahl) != 1) {
+		printf(">>Falsche Eingabe! Datentyp beachten!\n");
+		fgets(p, 1024, stdin);
+		zahl = DauZahlEingabe(min, max);
+	}
+	if (zahl > max || zahl < min) {
+		printf(">>Falsche Eingabe! Wertebereich beachten [%d,%d]\n", min, max);
+		zahl = DauZahlEingabe(min, max);
+	}
+	return zahl;
 }
