@@ -8,10 +8,6 @@
 
 #define DURCHGÄNGE 10
 
-//TODO - Füllprozent der ZellenMatrix besser bestimmen
-//TODO - neue Datei anlegen und Matrix selbst erstellen
-//TODO - auf DAO prüfen
-
 char** GetDateiStartZustand(char* fileName, int zeilen, int reihen, char* modus);
 char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* TextÖffnen(char* fileName, char* modus);
@@ -20,8 +16,9 @@ void StartZustandErstellen(char fileName[], char* modus);
 int GetZeilen(char* dateiName);
 int GetReihen(char* dateiName);
 int DauZahlEingabe(int min, int max);
-void Run(int zeilen, int reihen, char** zellen, int auswahl);
+char* DauDateiName(char* dateiEndung);
 void GoToXY(int x, int y);
+void Run(int zeilen, int reihen, char** zellen, int auswahl);
 
 int main() {
 	srand(time(NULL));
@@ -79,9 +76,7 @@ int main() {
 		zellen = GetDateiStartZustand(dateiName, zeilen, reihen, "rt");
 		break;
 	case 4:
-		printf("dateiname: ");
-		scanf("%s", dateiName);
-		fgets(p, 1024, stdin);
+		dateiName = DauDateiName(".txt");
 		StartZustandErstellen(dateiName, "w+t");
 		zeilen = GetZeilen(dateiName);
 		reihen = GetReihen(dateiName);
@@ -341,7 +336,7 @@ void StartZustandErstellen(char fileName[], char* modus) {
 	FILE* file = TextÖffnen(fileName, modus);
 	char* zustand = (char*)malloc(100 * sizeof(char));
 	printf("Zellen erstellen (q = beenden) : \n");
-
+	fgets(p, 1024, stdin);
 	while (true) {
 		scanf("%[q, ,*]s", zustand);	
 		fputs(zustand, file);
@@ -400,6 +395,22 @@ int DauZahlEingabe(int min, int max) {
 		zahl = DauZahlEingabe(min, max);
 	}
 	return zahl;
+}
+char* DauDateiName(char* dateiEndung) {
+	char p[1024];
+	char* dateiName = (char*)malloc(100 * sizeof(char));
+	printf("dateiname(ohne: '.'): ");
+	scanf("%s", dateiName);
+	for (int i = 0; i < strlen(dateiName); i++)
+	{
+		if (dateiName[i] == 46) {
+			printf(">>Falsche Eingabe, bitte kein Dateiformat oder '.' mit angeben\n");
+			fgets(p, 1024, stdin);
+			dateiName = DauDateiName(".txt");
+		}
+	}
+	strcat(dateiName, dateiEndung);
+	return dateiName;
 }
 void GoToXY(int x, int y)
 {
