@@ -8,6 +8,8 @@
 
 #define DURCHGƒNGE 10
 
+// TODO - R¸ckgabewerte -> Fehlermeldungen(Status)
+
 char** GetDateiStartZustand(char* fileName, int zeilen, int reihen, char* modus);
 char** GetRandomStartZustand(int prozent, int reihe, int zeile);
 FILE* Text÷ffnen(char* fileName, char* modus);
@@ -330,24 +332,57 @@ FILE* Text÷ffnen(char* fileName, char* modus) {
 		return file;
 	}
 }
+int CheckErstellterZustand(FILE *file, char* fileName, char* modus) {
+	char c;
+	int tmp = 0;
+	int anzahl = 0;
+	int counter = 0;
+	rewind(file);
+		for (c = getc(file); c != EOF; c = getc(file)) { //hier vlt besser mit ganzer Zeile ausles arbeiten
+			if (c == 10) counter++;
+		}
+		counter = counter - 1;
+		rewind(file);
+		for (int i = 0; i < counter; i++) {
+			tmp = anzahl;
+			anzahl = 0;
+			for (c = getc(file); c != 10; c = getc(file)) {
+				anzahl++;
+			}
+			if (i > 1 && tmp != anzahl) {
+				printf(">>Falsche Eingabe! Jede Zeile muss gleich viele Eintr‰ge haben!!%d.Zeile: %d eintr‰ge || %d.Zeile hat %d eintr‰ge\n", i, tmp, i + 1, anzahl);
+				fclose(file);
+				StartZustandErstellen(fileName, modus);
+			}
+		}
+	return 0;
+}
 void StartZustandErstellen(char fileName[], char* modus) {
 	char** zellen = { 0 };
 	char p[1024];
 	FILE* file = Text÷ffnen(fileName, modus);
 	char* zustand = (char*)malloc(100 * sizeof(char));
-	printf("Zellen erstellen (q = beenden) : \n");
+	printf("Zellen erstellen ('q' = beenden, '*' = lebende Zelle, ' ' = tote Zelle) : \n");
 	fgets(p, 1024, stdin);
+
 	while (true) {
-		scanf("%[q, ,*]s", zustand);	
+		if (scanf("%[q, ,*]s", zustand) != 1) {
+			printf("Falsche Eingabe! Nur ' ', '*' und 'q' erlaubt!\n");
+			fclose(file);
+			StartZustandErstellen(fileName, modus);
+		};
 		fputs(zustand, file);
 		fputs("\n", file);
 		fgets(p, 1024, stdin);
 		if (*zustand == 113) {
 			break;
-		}		
+		}	
+	}
+	if (CheckErstellterZustand(file, fileName, modus) != 0) {
+		fclose(file);
+		StartZustandErstellen(fileName, modus);
 	}
 	fclose(file);
-
 }
 int GetZeilen(char* dateiName) {
 	int zeile = 0;
